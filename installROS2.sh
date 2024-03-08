@@ -1,14 +1,14 @@
 #!/bin/bash
-# 
-# Copyright (c) 2021 Jetsonhacks 
+#
+# Copyright (c) 2021 Jetsonhacks
 # MIT License
 
 # Roughly follows the 'Install ROS From Source' procedures from:
 #   https://index.ros.org/doc/ros2/Installation/Foxy/Linux-Development-Setup/
-# mostly from: 
+# mostly from:
 #   Dockerfile.ros.foxy
 #   https://github.com/dusty-nv/jetson-containers
-# 
+#
 
 ROS_PKG=ros_base
 ROS_DISTRO=foxy
@@ -27,12 +27,12 @@ export LANG=en_US.UTF-8
 sudo apt-get update
 sudo apt-get install -y --no-install-recommends \
 		curl \
-		wget \ 
+		wget \
 		gnupg2 \
 		lsb-release
 sudo rm -rf /var/lib/apt/lists/*
-    
-wget --no-check-certificate https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc 
+
+wget --no-check-certificate https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc
 sudo apt-key add ros.asc
 sudo sh -c 'echo "deb [arch=$(dpkg --print-architecture)] http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/ros2-latest.list'
 
@@ -54,9 +54,10 @@ sudo apt-get install -y --no-install-recommends \
 		python3-rosinstall-generator \
 		libasio-dev \
 		libtinyxml2-dev \
-		libcunit1-dev
+		libcunit1-dev \
+                qt5-default
 sudo rm -rf /var/lib/apt/lists/*
-  
+
 # install some pip packages needed for testing
 python3 -m pip install -U \
 		argcomplete \
@@ -70,7 +71,8 @@ python3 -m pip install -U \
 		flake8-quotes \
 		pytest-repeat \
 		pytest-rerunfailures \
-		pytest
+		pytest \
+                lark
 
 # compile yaml-cpp-0.6, which some ROS packages may use (but is not in the 18.04 apt repo)
 git clone --branch yaml-cpp-0.6.0 https://github.com/jbeder/yaml-cpp yaml-cpp-0.6 && \
@@ -90,17 +92,16 @@ sudo sh -c "rosinstall_generator --deps --rosdistro ${ROS_DISTRO} ${ROS_PKG} lau
 cat ros2.${ROS_DISTRO}.${ROS_PKG}.rosinstall && \
     vcs import src < ros2.${ROS_DISTRO}.${ROS_PKG}.rosinstall"
 
-# download unreleased packages     
-sudo sh -c "git clone --branch ros2 https://github.com/Kukanani/vision_msgs ${ROS_BUILD_ROOT}/src/vision_msgs && \
-    git clone --branch ${ROS_DISTRO} https://github.com/ros2/demos demos && \
+# download unreleased packages
+sudo sh -c "git clone --branch ${ROS_DISTRO} https://github.com/ros2/demos demos && \
     cp -r demos/demo_nodes_cpp ${ROS_BUILD_ROOT}/src && \
     cp -r demos/demo_nodes_py ${ROS_BUILD_ROOT}/src && \
     rm -r -f demos"
 
 # install dependencies using rosdep
 sudo apt-get update
-    cd ${ROS_BUILD_ROOT} 
-sudo rosdep init  
+    cd ${ROS_BUILD_ROOT}
+sudo rosdep init
     rosdep update && \
     rosdep install --from-paths src --ignore-src --rosdistro ${ROS_DISTRO} -y --skip-keys "console_bridge fastcdr fastrtps rti-connext-dds-5.3.1 urdfdom_headers qt_gui" && \
     sudo rm -rf /var/lib/apt/lists/*
@@ -114,7 +115,7 @@ sudo colcon build --merge-install --install-base ${ROS_INSTALL_ROOT}
 sudo colcon build --merge-install --install-base ${ROS_INSTALL_ROOT}
 
 # Using " expands environment variable immediately
-echo "source $ROS_INSTALL_ROOT/setup.bash" >> ~/.bashrc 
+echo "source $ROS_INSTALL_ROOT/setup.bash" >> ~/.bashrc
 echo "source /usr/share/colcon_cd/function/colcon_cd.sh" >> ~/.bashrc
 echo "export _colcon_cd_root=~/ros2_install" >> ~/.bashrc
 

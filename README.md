@@ -29,3 +29,7 @@ Currently the NVIDIA Jetsons run Ubuntu 18.04. ROS2 foxy requires Ubuntu 20.04. 
 <b>January, 2021</b>
 * Tested on JetPack 4.5, L4T 32.5
 * Tested on Jetson Xavier NX
+
+<b>March 2024</b>
+* Tested on JetPack 4.6
+* Tested on Jetson Nano
